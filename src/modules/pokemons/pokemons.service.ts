@@ -15,4 +15,12 @@ export class PokemonsService {
     const pokemon = this.pokemonRepository.create(createPokemonDto);
     return this.pokemonRepository.save(pokemon);
   }
+
+  async findAll(): Promise<Pokemon[]> {
+    return this.pokemonRepository.find();
+  }
+
+  async findOne(id: number): Promise<Pokemon | null> {
+    return this.pokemonRepository.findOneBy({ id });
+  }
 } 
