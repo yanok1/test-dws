@@ -4,6 +4,7 @@ import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { Pokemon } from './pokemon.entity';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { FindPokemonsDto } from './dto/find-pokemons.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('pokemons')
 export class PokemonsController {
@@ -15,6 +16,7 @@ export class PokemonsController {
   }
 
   @Get()
+  @Throttle({ default: { limit: 5, ttl: 60 } })
   async findAll(
     @Query(new ValidationPipe({ transform: true })) query: FindPokemonsDto,
   ): Promise<Pokemon[]> {
