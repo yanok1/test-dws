@@ -10,4 +10,4 @@ import { Type } from './type.entity';
   controllers: [PokemonsController],
   providers: [PokemonsService],
 })
-export class PokemonsModule {} 
+export class PokemonsModule {}

@@ -9,4 +9,4 @@ export class CreatePokemonDto {
   @ArrayUnique()
   @IsString({ each: true })
   types: string[];
-} 
+}

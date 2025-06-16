@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Type } from './type.entity';
 
 @Entity('pokemons')
@@ -15,4 +22,4 @@ export class Pokemon {
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
-} 
+}

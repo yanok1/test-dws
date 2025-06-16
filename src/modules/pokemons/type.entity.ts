@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToMany,
+} from 'typeorm';
 import { Pokemon } from './pokemon.entity';
 
 @Entity('types')
@@ -14,4 +20,4 @@ export class Type {
 
   @ManyToMany(() => Pokemon, (pokemon) => pokemon.types)
   pokemons: Pokemon[];
-} 
+}

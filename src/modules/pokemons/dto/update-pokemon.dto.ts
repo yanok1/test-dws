@@ -10,4 +10,4 @@ export class UpdatePokemonDto {
   @ArrayUnique()
   @IsString({ each: true })
   types?: string[];
-} 
+}

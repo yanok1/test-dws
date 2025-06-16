@@ -32,4 +32,4 @@ export class FindPokemonsDto {
   @IsString()
   @IsIn(['asc', 'desc'])
   order?: string = 'asc';
-} 
+}

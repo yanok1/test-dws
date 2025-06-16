@@ -6,6 +6,7 @@ import { Type } from './type.entity';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { FindPokemonsDto } from './dto/find-pokemons.dto';
+import axios from 'axios';
 
 @Injectable()
 export class PokemonsService {
@@ -20,38 +21,54 @@ export class PokemonsService {
     const { name, types: typeNames } = createPokemonDto;
     const types = await Promise.all(
       typeNames.map(async (typeName) => {
-        let type = await this.typeRepository.findOne({ where: { name: typeName } });
+        let type = await this.typeRepository.findOne({
+          where: { name: typeName },
+        });
         if (!type) {
           type = this.typeRepository.create({ name: typeName });
           type = await this.typeRepository.save(type);
         }
         return type;
-      })
+      }),
     );
     const pokemon = this.pokemonRepository.create({ name, types });
     return this.pokemonRepository.save(pokemon);
   }
 
   async findAll(query?: FindPokemonsDto): Promise<Pokemon[]> {
-    const qb = this.pokemonRepository.createQueryBuilder('pokemon').leftJoinAndSelect('pokemon.types', 'type');
+    const qb = this.pokemonRepository
+      .createQueryBuilder('pokemon')
+      .leftJoinAndSelect('pokemon.types', 'type');
     if (query?.type) {
       qb.andWhere('type.name = :type', { type: query.type });
     }
     if (query?.name) {
       qb.andWhere('pokemon.name LIKE :name', { name: `%${query.name}%` });
     }
-    qb.orderBy(`pokemon.${query?.sort || 'name'}`, query?.order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC');
+    qb.orderBy(
+      `pokemon.${query?.sort || 'name'}`,
+      query?.order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC',
+    );
     qb.skip(query?.offset ?? 0);
     qb.take(query?.limit ?? 20);
     return qb.getMany();
   }
 
   async findOne(id: number): Promise<Pokemon | null> {
-    return this.pokemonRepository.findOne({ where: { id }, relations: ['types'] });
+    return this.pokemonRepository.findOne({
+      where: { id },
+      relations: ['types'],
+    });
   }
 
-  async update(id: number, updateDto: UpdatePokemonDto): Promise<Pokemon | null> {
-    const pokemon = await this.pokemonRepository.findOne({ where: { id }, relations: ['types'] });
+  async update(
+    id: number,
+    updateDto: UpdatePokemonDto,
+  ): Promise<Pokemon | null> {
+    const pokemon = await this.pokemonRepository.findOne({
+      where: { id },
+      relations: ['types'],
+    });
     if (!pokemon) return null;
     if (updateDto.name !== undefined) {
       pokemon.name = updateDto.name;
@@ -59,13 +76,15 @@ export class PokemonsService {
     if (updateDto.types !== undefined) {
       const types = await Promise.all(
         updateDto.types.map(async (typeName) => {
-          let type = await this.typeRepository.findOne({ where: { name: typeName } });
+          let type = await this.typeRepository.findOne({
+            where: { name: typeName },
+          });
           if (!type) {
             type = this.typeRepository.create({ name: typeName });
             type = await this.typeRepository.save(type);
           }
           return type;
-        })
+        }),
       );
       pokemon.types = types;
     }
@@ -76,4 +95,40 @@ export class PokemonsService {
     const result = await this.pokemonRepository.delete(id);
     return result.affected === 1;
   }
-} 
+
+  async importById(id: number): Promise<Pokemon> {
+    // Fetch from PokeAPI
+    const url = `https://pokeapi.co/api/v2/pokemon/${id}`;
+    const { data } = await axios.get(url);
+    const name: string = data.name;
+    const typeNames: string[] = data.types.map((t: any) => t.type.name);
+
+    // Find or create types
+    const types = await Promise.all(
+      typeNames.map(async (typeName) => {
+        let type = await this.typeRepository.findOne({
+          where: { name: typeName },
+        });
+        if (!type) {
+          type = this.typeRepository.create({ name: typeName });
+          type = await this.typeRepository.save(type);
+        }
+        return type;
+      }),
+    );
+
+    // Upsert pokemon by id
+    let pokemon = await this.pokemonRepository.findOne({
+      where: { id },
+      relations: ['types'],
+    });
+    if (pokemon) {
+      pokemon.name = name;
+      pokemon.types = types;
+      return this.pokemonRepository.save(pokemon);
+    } else {
+      pokemon = this.pokemonRepository.create({ id, name, types });
+      return this.pokemonRepository.save(pokemon);
+    }
+  }
+}

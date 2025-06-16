@@ -11,6 +11,7 @@ import {
   HttpCode,
   Query,
   ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { PokemonsService } from './pokemons.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
@@ -18,6 +19,7 @@ import { Pokemon } from './pokemon.entity';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { FindPokemonsDto } from './dto/find-pokemons.dto';
 import { Throttle } from '@nestjs/throttler';
+import { ImportPokemonDto } from './dto/import-pokemon.dto';
 
 @Controller('pokemons')
 export class PokemonsController {
@@ -64,5 +66,11 @@ export class PokemonsController {
     if (!deleted) {
       throw new NotFoundException(`Pokemon with id ${id} not found`);
     }
+  }
+
+  @Post('import')
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async importPokemonById(@Body() importDto: ImportPokemonDto) {
+    return this.pokemonsService.importById(importDto.id);
   }
 }

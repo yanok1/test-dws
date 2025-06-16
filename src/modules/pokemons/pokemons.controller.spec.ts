@@ -210,7 +210,7 @@ describe('PokemonsController (e2e)', () => {
         expect.arrayContaining([
           expect.objectContaining({ name: 'Charmander' }),
           expect.objectContaining({ name: 'Charmeleon' }),
-        ])
+        ]),
       );
       expect(
         res.body.every((p: any) => p.name.toLowerCase().includes('char')),
@@ -233,4 +233,24 @@ describe('PokemonsController (e2e)', () => {
       expect(names).toEqual(sorted);
     });
   });
-}); 
+
+  describe('POST /pokemons/import', () => {
+    it('should import a pokemon from PokeAPI and upsert it', async () => {
+      const importDto = { id: 158 };
+      const response = await request(app.getHttpServer())
+        .post('/pokemons/import')
+        .send(importDto)
+        .expect(201);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: 158,
+          name: 'totodile',
+          types: expect.arrayContaining([
+            expect.objectContaining({ name: 'water' }),
+          ]),
+          created_at: expect.any(String),
+        }),
+      );
+    });
+  });
+});
