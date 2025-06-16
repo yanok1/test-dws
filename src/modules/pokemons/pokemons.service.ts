@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Pokemon } from './pokemon.entity';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { FindPokemonsDto } from './dto/find-pokemons.dto';
 
 @Injectable()
 export class PokemonsService {
@@ -17,8 +18,18 @@ export class PokemonsService {
     return this.pokemonRepository.save(pokemon);
   }
 
-  async findAll(): Promise<Pokemon[]> {
-    return this.pokemonRepository.find();
+  async findAll(query?: FindPokemonsDto): Promise<Pokemon[]> {
+    const qb = this.pokemonRepository.createQueryBuilder('pokemon');
+    if (query?.type) {
+      qb.andWhere('pokemon.type = :type', { type: query.type });
+    }
+    if (query?.name) {
+      qb.andWhere('pokemon.name LIKE :name', { name: `%${query.name}%` });
+    }
+    qb.orderBy(`pokemon.${query?.sort || 'name'}`, query?.order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC');
+    qb.skip(query?.offset ?? 0);
+    qb.take(query?.limit ?? 20);
+    return qb.getMany();
   }
 
   async findOne(id: number): Promise<Pokemon | null> {

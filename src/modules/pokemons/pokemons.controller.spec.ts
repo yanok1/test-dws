@@ -143,4 +143,62 @@ describe('PokemonsController (e2e)', () => {
         .expect(404);
     });
   });
+
+  describe('/pokemons (GET) - filters, pagination, sorting', () => {
+    beforeAll(async () => {
+      // Clear and seed with known data
+      await request(app.getHttpServer()).delete('/pokemons/1');
+      await request(app.getHttpServer()).delete('/pokemons/2');
+      await request(app.getHttpServer()).delete('/pokemons/3');
+      await request(app.getHttpServer()).delete('/pokemons/4');
+      await request(app.getHttpServer()).delete('/pokemons/5');
+      await request(app.getHttpServer()).post('/pokemons').send({ name: 'Bulbasaur', type: 'grass' });
+      await request(app.getHttpServer()).post('/pokemons').send({ name: 'Ivysaur', type: 'grass' });
+      await request(app.getHttpServer()).post('/pokemons').send({ name: 'Charmander', type: 'fire' });
+      await request(app.getHttpServer()).post('/pokemons').send({ name: 'Charmeleon', type: 'fire' });
+      await request(app.getHttpServer()).post('/pokemons').send({ name: 'Squirtle', type: 'water' });
+    });
+
+    it('should filter by type', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/pokemons?type=fire')
+        .expect(200);
+      expect(res.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Charmander', type: 'fire' }),
+          expect.objectContaining({ name: 'Charmeleon', type: 'fire' }),
+        ])
+      );
+      expect(res.body.every((p: any) => p.type === 'fire')).toBe(true);
+    });
+
+    it('should filter by partial name', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/pokemons?name=char')
+        .expect(200);
+      expect(res.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ name: 'Charmander' }),
+          expect.objectContaining({ name: 'Charmeleon' }),
+        ])
+      );
+      expect(res.body.every((p: any) => p.name.toLowerCase().includes('char'))).toBe(true);
+    });
+
+    it('should paginate results', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/pokemons?limit=2&offset=1')
+        .expect(200);
+      expect(res.body.length).toBeLessThanOrEqual(2);
+    });
+
+    it('should sort by name descending', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/pokemons?sort=name&order=desc')
+        .expect(200);
+      const names = res.body.map((p: any) => p.name);
+      const sorted = [...names].sort((a, b) => b.localeCompare(a));
+      expect(names).toEqual(sorted);
+    });
+  });
 }); 

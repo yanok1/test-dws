@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Get, Param, ParseIntPipe, NotFoundException, Patch, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, ParseIntPipe, NotFoundException, Patch, Delete, HttpCode, Query, ValidationPipe } from '@nestjs/common';
 import { PokemonsService } from './pokemons.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { Pokemon } from './pokemon.entity';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { FindPokemonsDto } from './dto/find-pokemons.dto';
 
 @Controller('pokemons')
 export class PokemonsController {
@@ -14,8 +15,10 @@ export class PokemonsController {
   }
 
   @Get()
-  async findAll(): Promise<Pokemon[]> {
-    return this.pokemonsService.findAll();
+  async findAll(
+    @Query(new ValidationPipe({ transform: true })) query: FindPokemonsDto,
+  ): Promise<Pokemon[]> {
+    return this.pokemonsService.findAll(query);
   }
 
   @Get(':id')
