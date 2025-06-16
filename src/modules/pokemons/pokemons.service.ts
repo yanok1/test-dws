@@ -31,4 +31,9 @@ export class PokemonsService {
     Object.assign(pokemon, updateDto);
     return this.pokemonRepository.save(pokemon);
   }
+
+  async remove(id: number): Promise<boolean> {
+    const result = await this.pokemonRepository.delete(id);
+    return result.affected === 1;
+  }
 } 

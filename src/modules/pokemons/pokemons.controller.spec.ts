@@ -122,4 +122,25 @@ describe('PokemonsController (e2e)', () => {
       );
     });
   });
+
+  describe('/pokemons/:id (DELETE)', () => {
+    it('should delete a pokemon and return 204, then 404 on get', async () => {
+      // Create a pokemon
+      const createRes = await request(app.getHttpServer())
+        .post('/pokemons')
+        .send({ name: 'Rattata', type: 'normal' })
+        .expect(201);
+      const id = createRes.body.id;
+
+      // Delete the pokemon
+      await request(app.getHttpServer())
+        .delete(`/pokemons/${id}`)
+        .expect(204);
+
+      // Verify it is gone
+      await request(app.getHttpServer())
+        .get(`/pokemons/${id}`)
+        .expect(404);
+    });
+  });
 }); 
