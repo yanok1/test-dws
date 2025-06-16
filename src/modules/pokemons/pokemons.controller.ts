@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Get, Param, ParseIntPipe, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, ParseIntPipe, NotFoundException, Patch } from '@nestjs/common';
 import { PokemonsService } from './pokemons.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { Pokemon } from './pokemon.entity';
+import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 
 @Controller('pokemons')
 export class PokemonsController {
@@ -24,5 +25,17 @@ export class PokemonsController {
       throw new NotFoundException(`Pokemon with id ${id} not found`);
     }
     return pokemon;
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDto: UpdatePokemonDto,
+  ): Promise<Pokemon> {
+    const updated = await this.pokemonsService.update(id, updateDto);
+    if (!updated) {
+      throw new NotFoundException(`Pokemon with id ${id} not found`);
+    }
+    return updated;
   }
 } 

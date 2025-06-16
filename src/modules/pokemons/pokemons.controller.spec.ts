@@ -83,4 +83,43 @@ describe('PokemonsController (e2e)', () => {
       );
     });
   });
+
+  describe('/pokemons/:id (PATCH)', () => {
+    it('should update a pokemon and return the updated entity', async () => {
+      // Create a pokemon
+      const createRes = await request(app.getHttpServer())
+        .post('/pokemons')
+        .send({ name: 'Pidgey', type: 'flying' })
+        .expect(201);
+      const id = createRes.body.id;
+
+      // Update the pokemon
+      const updateDto = { name: 'Pidgeotto', type: 'flying/normal' };
+      const updateRes = await request(app.getHttpServer())
+        .patch(`/pokemons/${id}`)
+        .send(updateDto)
+        .expect(200);
+      expect(updateRes.body).toEqual(
+        expect.objectContaining({
+          id,
+          name: 'Pidgeotto',
+          type: 'flying/normal',
+          created_at: expect.any(String),
+        })
+      );
+
+      // Verify the update persisted
+      const getRes = await request(app.getHttpServer())
+        .get(`/pokemons/${id}`)
+        .expect(200);
+      expect(getRes.body).toEqual(
+        expect.objectContaining({
+          id,
+          name: 'Pidgeotto',
+          type: 'flying/normal',
+          created_at: expect.any(String),
+        })
+      );
+    });
+  });
 }); 
