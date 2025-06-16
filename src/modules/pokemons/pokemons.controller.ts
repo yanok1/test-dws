@@ -1,4 +1,17 @@
-import { Controller, Post, Body, Get, Param, ParseIntPipe, NotFoundException, Patch, Delete, HttpCode, Query, ValidationPipe } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  ParseIntPipe,
+  NotFoundException,
+  Patch,
+  Delete,
+  HttpCode,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common';
 import { PokemonsService } from './pokemons.service';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { Pokemon } from './pokemon.entity';
@@ -52,4 +65,4 @@ export class PokemonsController {
       throw new NotFoundException(`Pokemon with id ${id} not found`);
     }
   }
-} 
+}

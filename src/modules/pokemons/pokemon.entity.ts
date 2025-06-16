@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, JoinTable } from 'typeorm';
+import { Type } from './type.entity';
 
 @Entity('pokemons')
 export class Pokemon {
@@ -8,8 +9,9 @@ export class Pokemon {
   @Column()
   name: string;
 
-  @Column()
-  type: string;
+  @ManyToMany(() => Type, (type) => type.pokemons, { cascade: true })
+  @JoinTable({ name: 'pokemon_types' })
+  types: Type[];
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;

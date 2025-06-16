@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsArray, ArrayUnique } from 'class-validator';
 
 export class UpdatePokemonDto {
   @IsOptional()
@@ -6,6 +6,8 @@ export class UpdatePokemonDto {
   name?: string;
 
   @IsOptional()
-  @IsString()
-  type?: string;
+  @IsArray()
+  @ArrayUnique()
+  @IsString({ each: true })
+  types?: string[];
 } 
